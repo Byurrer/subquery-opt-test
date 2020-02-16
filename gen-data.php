@@ -1,4 +1,19 @@
 <?php
+/**
+ * gen-data.php
+ * Генерация данных (пачками) для таблиц
+ * Всего 2 таблицы: t1 и t2 (которая имеет данные ссылающиеся на t1)
+ * Использование: .../gen-data.php?table=NAME&count=COUNT где:
+ *  - NAME - название таблицы (t1 или t2, при этом для t2 создаются данные на основании данных в t1)
+ *  - COUNT - количество данных * SIZE_PATCH_GEN (config.php)
+ * PHP Version 7.4
+ * 
+ * @author Buturlin Vitaliy (Byurrer), email: byurrer@mail.ru, site: byurrer.ru
+ * @copyright 2020 Buturlin Vitaliy
+ * @license MIT https://opensource.org/licenses/mit-license.php
+ */
+
+//##########################################################################
 
 include("config.php");
 include("db.php");

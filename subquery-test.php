@@ -1,4 +1,15 @@
 <?php
+/**
+ * subquery-test.php
+ * 3 способа избежать вложенных подзапросов
+ * PHP Version 7.4
+ * 
+ * @author Buturlin Vitaliy (Byurrer), email: byurrer@mail.ru, site: byurrer.ru
+ * @copyright 2020 Buturlin Vitaliy
+ * @license MIT https://opensource.org/licenses/mit-license.php
+ */
+
+//##########################################################################
 
 include("config.php");
 include("db.php");
@@ -6,8 +17,6 @@ include("db.php");
 header("Content-type: text/plain; charset=utf-8");
 
 $db = new CDB(DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASSWORD);
-/*$db->query("SET GLOBAL innodb_buffer_pool_size=5242880;
-SET GLOBAL innodb_buffer_pool_chunk_size = 5242880;", null, false);*/
 
 //**************************************************************************
 
@@ -19,7 +28,8 @@ $fTime1 = microtime(true)-$fTime1;
 
 //**************************************************************************
 
-// 2) формирование запроса с перебросом данных на пхп
+// 2) формирование запроса с перебросом данных на php
+// делаем подзапрос отдельно, затем полученные данные вставляем в основной запрос
 $fTime2 = microtime(true);
 $aInner = $db->query("SELECT  `t1` FROM `t2` WHERE status=0", null, true);
 $aInner2 = [];
@@ -32,7 +42,7 @@ $fTime2 = microtime(true)-$fTime2;
 
 //**************************************************************************
 
-// 3) формирование запроса с перебросом данных на php, при этом список создается на стороне бд
+// 3) формирование запроса с перебросом данных на php, при этом список создается на стороне СУБД
 $fTime3 = microtime(true);
 $db->query("SET group_concat_max_len = CAST('-1' AS UNSIGNED)", null, false);
 $aInner3 = $db->query("SELECT  GROUP_CONCAT(`t1`) AS t1 FROM `t2` WHERE status=0", null, true);
@@ -43,7 +53,7 @@ $fTime3 = microtime(true)-$fTime3;
 
 //**************************************************************************
 
-// 4) генерация запроса без вложенного подзапроса на стороне субд
+// 4) генерация запроса без вложенного подзапроса на стороне СУБД
 $fTime4 = microtime(true);
 $db->query(
 	"SET group_concat_max_len = CAST('-1' AS UNSIGNED);
@@ -69,6 +79,7 @@ $fTime4 = microtime(true)-$fTime4;
 
 //##########################################################################
 
+// сравнение данных
 /*$aVerify = [];
 foreach($aRes2 as $value)
 	$aVerify[] = $value["id"];
@@ -91,7 +102,13 @@ foreach($aRes4 as $value)
 		echo "aRes4 id ".$value["id"]." not found\n";
 }*/
 
-print_r( [
+/* вывод результатов:
+	timeN - время выполнения способа
+	errN - текст ошибки способа
+	resN_count - размер массива результатов способа (на случай без LIMIT)
+	count_inner - количество возвращаемых данных подзапросом
+*/
+print_r([
 	"time1" => $fTime1, "time2" => $fTime2, "time3" => $fTime3, "time4" => $fTime4, 
 	"err1" => $sErr1, "err2" => $sErr2, "err3" => $sErr3, "err4" => $sErr4,
 	"res1_count" => count($aRes1), "res2_count" => count($aRes2), "res3_count" => count($aRes3), "res4_count" => count($aRes4),
